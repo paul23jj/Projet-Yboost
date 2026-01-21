@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "openai": "^6.16.0"
+  },
+  "name": "projet-yboost",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul23jj/Projet-Yboost.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/paul23jj/Projet-Yboost/issues"
+  },
+  "homepage": "https://github.com/paul23jj/Projet-Yboost#readme"
+}
