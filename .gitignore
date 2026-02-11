@@ -9,11 +9,9 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 
-# Ajoute ces lignes si elles n'y sont pas :
-
+node_modules/
 # Dossier de build (si vous en utilisez un plus tard)
 dist/
 build/
-
 # Fichiers de log système plus larges
 *.log
