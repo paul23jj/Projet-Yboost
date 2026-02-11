@@ -1,47 +1,39 @@
+const { HfInference } = require('@huggingface/inference');
+const fs = require('fs');
 require('dotenv').config();
 
-async function generateImage(prompt) {
-    console.log(`🤖 Envoi du prompt à l'IA : "${prompt}"`);
+// Initialisation avec ta clé API du .env
+const hf = new HfInference(process.env.HF_ACCESS_TOKEN);
 
+/**
+ * Génère un asset de jeu à partir d'un prompt
+ * @param {string} prompt - Description de l'objet (ex: "épée magique pixel art")
+ * @param {string} filename - Nom du fichier de sortie
+ */
+async function generateGameAsset(prompt, filename) {
     try {
-        const response = await fetch(process.env.HF_API_URL, {
-            headers: {
-                Authorization: `Bearer ${process.env.HF_API_KEY}`,
-                "Content-Type": "application/json",
+        console.log(`Extraction de l'asset pour : "${prompt}"...`);
+
+        const response = await hf.textToImage({
+            model: 'stabilityai/stable-diffusion-2-1', // Modèle standard, tu peux en tester d'autres
+            inputs: prompt,
+            parameters: {
+                negative_prompt: "blurry, bad quality, distorted",
             },
-            method: "POST",
-            body: JSON.stringify({
-                inputs: prompt,
-                // Paramètres optionnels pour améliorer le résultat
-                parameters: {
-                    negative_prompt: "blurry, low quality, text, watermark, bad anatomy",
-                }
-            }),
         });
 
-        // Gestion des erreurs spécifiques à Hugging Face
-        if (!response.ok) {
-            const errorDetails = await response.json(); // Souvent HF renvoie du JSON en cas d'erreur
-            throw new Error(`Erreur API (${response.status}): ${JSON.stringify(errorDetails)}`);
-        }
+        // La réponse est un Blob, on le convertit en Buffer pour Node.js
+        const buffer = Buffer.from(await response.arrayBuffer());
 
-        // Si tout va bien, l'API renvoie une image binaire (Blob/Buffer)
-        const arrayBuffer = await response.arrayBuffer();
-        return Buffer.from(arrayBuffer); // On convertit en Buffer Node.js
+        // Sauvegarde locale de l'image
+        fs.writeFileSync(`./${filename}.png`, buffer);
 
+        console.log(`✅ Asset généré avec succès : ${filename}.png`);
+        return true;
     } catch (error) {
-        console.error("❌ Erreur dans aiService :", error.message);
-        throw error; // On renvoie l'erreur pour que le contrôleur la gère
+        console.error("❌ Erreur lors de la génération :", error.message);
+        return false;
     }
 }
 
-module.exports = { generateImage };
-
-if (response.status === 503) {
-    const data = await response.json();
-    return res.status(503).json({
-        success: false,
-        error: "Le modèle est en train de chauffer...",
-        estimated_time: data.estimated_time
-    });
-} // le model s'endort si il n'est pas utilisé au bout de 1 heure
+module.exports = { generateGameAsset };

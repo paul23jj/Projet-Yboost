@@ -1,5 +1,9 @@
 ### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=WebStorm
+JSON https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell
+Authorization: Bearer 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
+Content-type: application/json
 
+{
+  "input": 'mettre le prompt'
+}
 ###
