@@ -1,9 +1,0 @@
-### GET request to example server
-JSON https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell
-Authorization: Bearer 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
-Content-type: application/json
-
-{
-  "input": 'mettre le prompt'
-}
-###
