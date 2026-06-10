@@ -8,9 +8,9 @@ function isNetworkError(e) {
     return e instanceof TypeError || e.name === 'AbortError';
 }
 
-async function apiRequest(path, { method = 'GET', body, auth = false } = {}) {
+async function apiRequest(path, { method = 'GET', body, auth = false, timeout = API_TIMEOUT } = {}) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
         const headers = { 'Content-Type': 'application/json' };
@@ -146,4 +146,17 @@ const CartAPI = {
     ajouter: (body) => apiPost('/api/panier', body, true),
     modifierQuantite: (ligneId, quantite) => apiPut(`/api/panier/${ligneId}`, { quantite }, true),
     supprimer: (ligneId) => apiDelete(`/api/panier/${ligneId}`, true),
+};
+
+// ----- Paiement (Stripe) -----
+const PaiementAPI = {
+    getClesPubliques: () => apiGet('/api/paiement/cles'),
+    creerIntent: () => apiRequest('/api/paiement/intent', { method: 'POST', body: {}, auth: true, timeout: 10000 }),
+    confirmer: (paymentIntentId, adresseLivraisonId) =>
+        apiRequest('/api/paiement/confirmer', {
+            method: 'POST',
+            body: { payment_intent_id: paymentIntentId, adresse_livraison_id: adresseLivraisonId || null },
+            auth: true,
+            timeout: 10000,
+        }),
 };

@@ -104,8 +104,17 @@
                 <span>Total</span>
                 <span id="cart-total"></span>
             </div>
-            <button class="btn btn--primary btn--block" id="checkout-btn" style="display:none;">Passer la commande</button>
             <p class="form-error" id="cart-feedback"></p>
+
+            <div class="checkout-section" id="checkout-section" style="display:none;">
+                <h2 class="checkout-section__title">Paiement</h2>
+                <div class="card-element" id="card-element"></div>
+                <p class="form-error" id="payment-error"></p>
+                <button class="btn btn--primary btn--block" id="pay-btn">Payer</button>
+            </div>
+            <div class="empty-state" id="login-required" style="display:none;">
+                Connectez-vous avec un compte pour passer commande.
+            </div>
         </div>
     </main>
 
@@ -149,6 +158,7 @@
     <script src="script/auth.js"></script>
     <script src="script/render.js"></script>
     <script src="script/search.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="script/page-cart.js"></script>
 </body>
 </html>

@@ -4,11 +4,6 @@
 
 // Tables de référence (backend/sql/schema.sql et data.sql)
 const TAILLE_IDS = { XS: 1, S: 2, M: 3, L: 4, XL: 5, XXL: 6 };
-const COULEUR_IDS = {
-    'Noir': 1, 'Blanc': 2, 'Bleu': 3, 'Bleu clair': 4, 'Gris': 5, 'Gris clair': 6,
-    'Beige': 7, 'Marron': 8, 'Kaki': 9, 'Rose': 10, 'Rouge': 11, 'Vert': 12,
-    'Crème': 13, 'Marine': 14, 'Bordeaux': 15,
-};
 
 function findLocalProduct(id) {
     return PRODUCTS_FALLBACK.find((p) => p.id === Number(id));
@@ -29,7 +24,6 @@ function normalizeApiProduct(p, detail = false) {
     };
     if (detail) {
         base.tailles = (p.tailles || []).map((t) => ({ id: t.id, libelle: t.libelle }));
-        base.couleurs = (p.couleurs || []).map((c) => ({ id: c.id, nom: c.nom, hex: c.hex_code }));
     }
     return base;
 }
@@ -48,7 +42,6 @@ function normalizeFallbackProduct(p, detail = false) {
     };
     if (detail) {
         base.tailles = p.tailles.map((libelle) => ({ id: TAILLE_IDS[libelle], libelle }));
-        base.couleurs = p.couleurs.map((c) => ({ id: COULEUR_IDS[c.nom], nom: c.nom, hex: c.hex }));
     }
     return base;
 }

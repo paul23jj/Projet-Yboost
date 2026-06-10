@@ -856,32 +856,6 @@ input, select {
     border-color: var(--black);
 }
 
-.color-options {
-    display: flex;
-    gap: 10px;
-}
-
-.color-swatch {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1px solid var(--gray-200);
-    position: relative;
-    transition: transform var(--transition);
-}
-
-.color-swatch:hover {
-    transform: scale(1.08);
-}
-
-.color-swatch.is-selected::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border: 1px solid var(--black);
-    border-radius: 50%;
-}
-
 .product-info__actions {
     display: flex;
     gap: 12px;
@@ -999,6 +973,28 @@ input, select {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
+}
+
+.checkout-section {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 24px 0 64px;
+}
+
+.checkout-section__title {
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.card-element {
+    padding: 14px;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
+    margin-bottom: 16px;
 }
 
 .favorites-grid {

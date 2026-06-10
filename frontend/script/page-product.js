@@ -54,20 +54,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Couleurs
-    let selectedCouleur = null;
-    const colorEl = document.getElementById('color-options');
-    colorEl.innerHTML = produit.couleurs
-        .map((c) => `<button type="button" class="color-swatch" style="background:${c.hex}" data-id="${c.id}" data-nom="${escapeHtml(c.nom)}" title="${escapeHtml(c.nom)}" aria-label="${escapeHtml(c.nom)}"></button>`)
-        .join('');
-    colorEl.querySelectorAll('button').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            colorEl.querySelectorAll('button').forEach((b) => b.classList.remove('is-selected'));
-            btn.classList.add('is-selected');
-            selectedCouleur = { id: Number(btn.dataset.id), nom: btn.dataset.nom };
-        });
-    });
-
     // Favoris
     const favBtn = document.getElementById('favorite-btn');
     favBtn.classList.toggle('is-active', Wishlist.has(produit.id));
@@ -90,8 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             produit,
             tailleLibelle: selectedTaille ? selectedTaille.libelle : null,
             tailleId: selectedTaille ? selectedTaille.id : null,
-            couleurNom: selectedCouleur ? selectedCouleur.nom : null,
-            couleurId: selectedCouleur ? selectedCouleur.id : null,
             quantite: 1,
         });
         addBtn.disabled = false;

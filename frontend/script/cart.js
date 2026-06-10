@@ -29,7 +29,6 @@ const Cart = {
                         nom: l.nom,
                         prix: parseFloat(l.prix),
                         taille: l.taille,
-                        couleur: l.couleur,
                         quantite: l.quantite,
                         image: local ? local.images[0] : '',
                     };
@@ -46,10 +45,10 @@ const Cart = {
         return items.reduce((sum, i) => sum + i.prix * i.quantite, 0);
     },
 
-    async addItem({ produit, tailleLibelle, tailleId, couleurNom, couleurId, quantite = 1 }) {
+    async addItem({ produit, tailleLibelle, tailleId, quantite = 1 }) {
         if (this.useApi()) {
             try {
-                await CartAPI.ajouter({ produit_id: produit.id, taille_id: tailleId || null, couleur_id: couleurId || null, quantite });
+                await CartAPI.ajouter({ produit_id: produit.id, taille_id: tailleId || null, quantite });
                 this.updateBadge();
                 return { ok: true };
             } catch (e) {
@@ -59,7 +58,7 @@ const Cart = {
 
         const items = this._getLocal();
         const existing = items.find(
-            (i) => i.produitId === produit.id && i.taille === (tailleLibelle || null) && i.couleur === (couleurNom || null)
+            (i) => i.produitId === produit.id && i.taille === (tailleLibelle || null)
         );
         if (existing) {
             existing.quantite += quantite;
@@ -70,7 +69,6 @@ const Cart = {
                 nom: produit.nom,
                 prix: produit.prix,
                 taille: tailleLibelle || null,
-                couleur: couleurNom || null,
                 quantite,
                 image: produit.images[0] || '',
             });

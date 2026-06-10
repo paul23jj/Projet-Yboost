@@ -7,8 +7,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyEl = document.getElementById('empty-cart');
     const summaryEl = document.getElementById('cart-summary');
     const totalEl = document.getElementById('cart-total');
-    const checkoutBtn = document.getElementById('checkout-btn');
     const feedbackEl = document.getElementById('cart-feedback');
+    const checkoutSection = document.getElementById('checkout-section');
+    const loginRequiredEl = document.getElementById('login-required');
+    const paymentErrorEl = document.getElementById('payment-error');
+    const payBtn = document.getElementById('pay-btn');
+
+    let stripe = null;
+    let cardElement = null;
+    let stripeReady = false;
+
+    async function initStripe() {
+        if (stripeReady) return true;
+        if (typeof Stripe !== 'function') return false;
+        try {
+            const { publishable_key } = await PaiementAPI.getClesPubliques();
+            if (!publishable_key) return false;
+            stripe = Stripe(publishable_key);
+            cardElement = stripe.elements().create('card');
+            cardElement.mount('#card-element');
+            stripeReady = true;
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
 
     async function render() {
         const items = await Cart.getItems();
@@ -17,20 +40,20 @@ document.addEventListener('DOMContentLoaded', () => {
             itemsEl.innerHTML = '';
             emptyEl.style.display = 'block';
             summaryEl.style.display = 'none';
-            checkoutBtn.style.display = 'none';
+            checkoutSection.style.display = 'none';
+            loginRequiredEl.style.display = 'none';
             return;
         }
 
         emptyEl.style.display = 'none';
         summaryEl.style.display = 'flex';
-        checkoutBtn.style.display = 'inline-flex';
 
         itemsEl.innerHTML = items.map((item) => `
             <div class="cart-item" data-ligne-id="${item.ligneId}">
                 <img src="${item.image}" alt="">
                 <div class="cart-item__info">
                     <p class="cart-item__name">${escapeHtml(item.nom)}</p>
-                    <p class="cart-item__variant">${[item.taille ? `Taille ${item.taille}` : '', item.couleur || ''].filter(Boolean).map(escapeHtml).join(' · ')}</p>
+                    <p class="cart-item__variant">${item.taille ? escapeHtml(`Taille ${item.taille}`) : ''}</p>
                 </div>
                 <div class="cart-item__qty">
                     <button type="button" data-action="decrease" aria-label="Diminuer la quantité">-</button>
@@ -68,10 +91,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 render();
             });
         });
+
+        if (Cart.useApi()) {
+            loginRequiredEl.style.display = 'none';
+            const ready = await initStripe();
+            checkoutSection.style.display = ready ? 'block' : 'none';
+            if (!ready) feedbackEl.textContent = "Le paiement n'est pas disponible pour le moment.";
+        } else {
+            checkoutSection.style.display = 'none';
+            loginRequiredEl.style.display = 'block';
+        }
     }
 
-    checkoutBtn.addEventListener('click', () => {
-        feedbackEl.textContent = "La validation de commande n'est pas disponible dans cette démo.";
+    payBtn.addEventListener('click', async () => {
+        paymentErrorEl.textContent = '';
+        feedbackEl.textContent = '';
+        feedbackEl.classList.remove('form-success');
+
+        if (!stripeReady) {
+            paymentErrorEl.textContent = "Le paiement n'est pas disponible pour le moment.";
+            return;
+        }
+
+        payBtn.disabled = true;
+        payBtn.textContent = 'Paiement en cours...';
+
+        try {
+            const intent = await PaiementAPI.creerIntent();
+            const result = await stripe.confirmCardPayment(intent.client_secret, {
+                payment_method: { card: cardElement },
+            });
+
+            if (result.error) {
+                paymentErrorEl.textContent = result.error.message || 'Le paiement a échoué.';
+                return;
+            }
+
+            await PaiementAPI.confirmer(result.paymentIntent.id);
+            feedbackEl.textContent = 'Paiement réussi, votre commande a été enregistrée !';
+            feedbackEl.classList.add('form-success');
+            cardElement.clear();
+            Cart.updateBadge();
+            await render();
+        } catch (e) {
+            paymentErrorEl.textContent = e.message || 'Une erreur est survenue.';
+        } finally {
+            payBtn.disabled = false;
+            payBtn.textContent = 'Payer';
+        }
     });
 
     render();
