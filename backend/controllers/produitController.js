@@ -25,10 +25,6 @@ const SLUG_TYPE_MAP = {
     vestesH: 'veste'
 };
 
-// ----------------------------------------------------------------
-// GET /api/produits
-// Query params: genre (Homme|Femme), categorie (slug), page, limit
-// ----------------------------------------------------------------
 const getAllProduits = async (req, res) => {
     const { genre, categorie, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
@@ -52,7 +48,6 @@ const getAllProduits = async (req, res) => {
             params.push(categorie);
         }
 
-        // Compte total pour pagination
         const [countResult] = await db.query(
             query.replace('SELECT p.*, c.nom AS categorie_nom, c.slug AS categorie_slug, g.nom AS genre_nom', 'SELECT COUNT(*) as total'),
             params
@@ -63,7 +58,6 @@ const getAllProduits = async (req, res) => {
 
         const [produits] = await db.query(query, params);
 
-        // Ajouter les URLs d'images à chaque produit
         const produitsAvecImages = produits.map(p => ({
             ...p,
             urls_images: buildImageUrls(
@@ -89,9 +83,6 @@ const getAllProduits = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// GET /api/produits/:id
-// ----------------------------------------------------------------
 const getProduitById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -107,7 +98,6 @@ const getProduitById = async (req, res) => {
 
         const p = rows[0];
 
-        // Récupère tailles et couleurs
         const [tailles] = await db.query(`
             SELECT t.id, t.libelle, pt.stock_taille
             FROM produit_taille pt
@@ -139,10 +129,6 @@ const getProduitById = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// GET /api/categories
-// Retourne toutes les catégories groupées par genre
-// ----------------------------------------------------------------
 const getCategories = async (req, res) => {
     try {
         const [rows] = await db.query(`
@@ -152,14 +138,12 @@ const getCategories = async (req, res) => {
             ORDER BY g.id, c.nom
         `);
 
-        // Grouper par genre
         const grouped = rows.reduce((acc, cat) => {
             if (!acc[cat.genre_nom]) acc[cat.genre_nom] = [];
             acc[cat.genre_nom].push({
                 id: cat.id,
                 nom: cat.nom,
                 slug: cat.slug,
-                // URL de l'affiche de catégorie
                 affiche: `/assets/${cat.genre_nom}/${cat.slug}/affiche.jpg`
             });
             return acc;

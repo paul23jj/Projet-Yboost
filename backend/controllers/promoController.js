@@ -1,10 +1,5 @@
 const db = require('../config/db');
 
-// ----------------------------------------------------------------
-// GET /api/produits/promos
-// Retourne tous les produits en promotion (prix_reduit non null
-// et date_fin_promo pas encore passée)
-// ----------------------------------------------------------------
 const getPromos = async (req, res) => {
     try {
         const [produits] = await db.query(`
@@ -43,11 +38,6 @@ const getPromos = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// PUT /api/produits/:id/promo
-// Ajoute ou modifie une réduction sur un produit
-// Body: { prix_reduit, date_fin_promo (optionnel) }
-// ----------------------------------------------------------------
 const setPromo = async (req, res) => {
     const { id } = req.params;
     const { prix_reduit, date_fin_promo } = req.body;
@@ -57,7 +47,6 @@ const setPromo = async (req, res) => {
     }
 
     try {
-        // Vérifie que le produit existe
         const [rows] = await db.query('SELECT prix FROM produit WHERE id = ?', [id]);
         if (rows.length === 0) return res.status(404).json({ message: 'Produit introuvable' });
 
@@ -87,10 +76,6 @@ const setPromo = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// DELETE /api/produits/:id/promo
-// Supprime la réduction d'un produit
-// ----------------------------------------------------------------
 const removePromo = async (req, res) => {
     const { id } = req.params;
     try {
@@ -105,25 +90,18 @@ const removePromo = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// PUT /api/produits/:id/stock
-// Modifier le stock d'un produit
-// Body: { stock } ou { taille_id, stock_taille }
-// ----------------------------------------------------------------
 const updateStock = async (req, res) => {
     const { id } = req.params;
     const { stock, taille_id, stock_taille } = req.body;
 
     try {
         if (taille_id && stock_taille !== undefined) {
-            // Met à jour le stock pour une taille spécifique
             await db.query(
                 'UPDATE produit_taille SET stock_taille = ? WHERE produit_id = ? AND taille_id = ?',
                 [stock_taille, id, taille_id]
             );
             res.json({ message: 'Stock par taille mis à jour' });
         } else if (stock !== undefined) {
-            // Met à jour le stock global
             await db.query('UPDATE produit SET stock = ? WHERE id = ?', [stock, id]);
             res.json({ message: 'Stock global mis à jour' });
         } else {

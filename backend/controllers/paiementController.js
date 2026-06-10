@@ -1,11 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const db = require('../config/db');
 
-// ----------------------------------------------------------------
-// POST /api/paiement/intent
-// Crée un PaymentIntent Stripe pour le montant du panier
-// Body: { commande_id } ou calcule depuis le panier actif
-// ----------------------------------------------------------------
 const creerPaymentIntent = async (req, res) => {
     const utilisateur_id = req.user.id;
 
@@ -31,16 +26,13 @@ const creerPaymentIntent = async (req, res) => {
             return res.status(400).json({ message: 'Panier vide' });
         }
 
-        // Calcul du total en centimes (Stripe travaille en centimes)
         const total = lignes.reduce((sum, l) => sum + l.prix * l.quantite, 0);
         const totalCentimes = Math.round(total * 100);
 
-        // Récupère les infos utilisateur
         const [users] = await db.query(
             'SELECT email FROM utilisateur WHERE id = ?', [utilisateur_id]
         );
 
-        // Crée le PaymentIntent chez Stripe
         const paymentIntent = await stripe.paymentIntents.create({
             amount: totalCentimes,
             currency: 'eur',
@@ -65,11 +57,6 @@ const creerPaymentIntent = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// POST /api/paiement/confirmer
-// Appelé après paiement réussi côté frontend
-// Body: { payment_intent_id, adresse_livraison_id }
-// ----------------------------------------------------------------
 const confirmerPaiement = async (req, res) => {
     const { payment_intent_id, adresse_livraison_id } = req.body;
     const utilisateur_id = req.user.id;
@@ -79,7 +66,6 @@ const confirmerPaiement = async (req, res) => {
     }
 
     try {
-        // Vérifie le statut du paiement chez Stripe
         const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
 
         if (paymentIntent.status !== 'succeeded') {
@@ -89,7 +75,6 @@ const confirmerPaiement = async (req, res) => {
             });
         }
 
-        // Récupère le panier
         const [paniers] = await db.query(
             'SELECT id FROM panier WHERE utilisateur_id = ?', [utilisateur_id]
         );
@@ -105,7 +90,6 @@ const confirmerPaiement = async (req, res) => {
 
         const total = lignes.reduce((sum, l) => sum + l.prix * l.quantite, 0);
 
-        // Crée la commande en BDD
         const [cmdResult] = await db.query(
             `INSERT INTO commande 
              (utilisateur_id, adresse_livraison_id, statut, total) 
@@ -114,7 +98,6 @@ const confirmerPaiement = async (req, res) => {
         );
         const commande_id = cmdResult.insertId;
 
-        // Insère les lignes de commande
         for (const ligne of lignes) {
             await db.query(
                 `INSERT INTO commande_ligne 
@@ -124,7 +107,6 @@ const confirmerPaiement = async (req, res) => {
             );
         }
 
-        // Vide le panier
         await db.query('DELETE FROM panier_ligne WHERE panier_id = ?', [panier_id]);
 
         res.json({
@@ -139,10 +121,6 @@ const confirmerPaiement = async (req, res) => {
     }
 };
 
-// ----------------------------------------------------------------
-// GET /api/paiement/cles
-// Retourne la clé publique Stripe (safe à exposer au frontend)
-// ----------------------------------------------------------------
 const getClePublique = (req, res) => {
     res.json({ publishable_key: process.env.STRIPE_PUBLISHABLE_KEY });
 };
